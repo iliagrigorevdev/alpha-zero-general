@@ -8,8 +8,8 @@ MOVEMENTS = [(1, 0), (0, 1), (-1, 0), (0, -1)]
 MOVEMENT_COUNT = len(MOVEMENTS)
 PLAYER_LAYER_SYMBOLS = ['o', 'C', 'O']
 OPPONENT_LAYER_SYMBOLS = ['x', 'Y', 'X']
-PLAYER_SNOWMEN_SYMBOLS = ['8', 'S']
-OPPONENT_SNOWMEN_SYMBOLS = ['Z', '7']
+PLAYER_SNOWMAN_SYMBOLS = ['8', 'S']
+OPPONENT_SNOWMAN_SYMBOLS = ['Z', '7']
 
 class SnowmanGame(Game):
   def __init__(self, boardLength):
@@ -168,7 +168,7 @@ class SnowmanGame(Game):
 
   # Board example of size 8x8
   # '*' - snow, 'o'/'C'/'O' - snowballs, x'/'Y'/'X' - opponent snowballs
-  # 'S'/'8' - snowmens, '7'/'Z' - opponent snowmens
+  # 'S'/'8' - snowmen, '7'/'Z' - opponent snowmen
   #     1 2 3 4 5 6 7 8
   #     - - - - - - - -
   # 1 | * * * * * * * * |
@@ -200,13 +200,13 @@ class SnowmanGame(Game):
               if symbol is None:
                 symbol = PLAYER_LAYER_SYMBOLS[i]
               else:
-                symbol = PLAYER_SNOWMEN_SYMBOLS[i]
+                symbol = PLAYER_SNOWMAN_SYMBOLS[i]
           for i in range(LAYER_COUNT - 1, -1, -1):
             if board[LAYER_COUNT + i][y][x] != 0:
               if symbol is None:
                 symbol = OPPONENT_LAYER_SYMBOLS[i]
               else:
-                symbol = OPPONENT_SNOWMEN_SYMBOLS[i]
+                symbol = OPPONENT_SNOWMAN_SYMBOLS[i]
         if symbol is None:
           symbol = " "
         print(symbol, end=" ")
