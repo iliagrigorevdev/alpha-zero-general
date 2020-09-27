@@ -1,5 +1,7 @@
 import Arena
+from MCTS import MCTS
 from snowman.SnowmanGame import SnowmanGame
+from snowman.pytorch.NNet import NNetWrapper as NNet
 import numpy as np
 from utils import *
 
@@ -18,7 +20,15 @@ class RandomPlayer():
     return action
 
 game = SnowmanGame(6)
-player = RandomPlayer(game).play
-arena = Arena.Arena(player, player, game, display=SnowmanGame.display)
+
+player1 = RandomPlayer(game).play
+
+nnet = NNet(game)
+nnet.load_checkpoint('./temp/','best.pth.tar')
+args = dotdict({'numMCTSSims': 50, 'cpuct':1.0})
+mcts = MCTS(game, nnet, args)
+player2 = (lambda x: np.argmax(mcts.getActionProb(x, temp=0)))
+
+arena = Arena.Arena(player1, player2, game, display=SnowmanGame.display)
 
 print(arena.playGames(2, verbose=True))

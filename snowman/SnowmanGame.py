@@ -14,16 +14,17 @@ OPPONENT_SNOWMEN_SYMBOLS = ['Z', '7']
 class SnowmanGame(Game):
   def __init__(self, boardLength):
     self.boardLength = boardLength
-    self.boardSize = (PLANE_COUNT, self.boardLength, self.boardLength)
+    self.boardShape = (PLANE_COUNT, self.boardLength, self.boardLength)
     self.actionSize = boardLength * boardLength * MOVEMENT_COUNT
+    self.actionShape = (boardLength, boardLength, MOVEMENT_COUNT)
 
   def getInitBoard(self):
-    board = np.zeros(self.boardSize, dtype=int)
+    board = np.zeros(self.boardShape, dtype=int)
     board[SNOW_PLANE] = 1 # all covered in snow
     return board
 
   def getBoardSize(self):
-    return self.boardSize
+    return self.boardShape
 
   def getActionSize(self):
     return self.actionSize
@@ -78,10 +79,12 @@ class SnowmanGame(Game):
 
   def getGameEnded(self, board, player):
     if self.getValidMoves(board, player, True):
-      return 0
+      return 0 # not over
     if self.isPlayerWin(board, player):
-      return 1
-    return -1
+      return 1 # win
+    if self.isPlayerWin(board, -player):
+      return -1 # lose
+    return 1e-4 # draw
 
   def getCanonicalForm(self, board, player):
     canonicalBoard = np.copy(board)
@@ -93,20 +96,25 @@ class SnowmanGame(Game):
 
   def getSymmetries(self, board, pi):
     assert len(pi) == self.actionSize
-    shapedPi = np.reshape(pi, self.boardSize)
+    shapedPi = np.reshape(pi, self.actionShape)
     symmetries = []
     for rotation in range(4):
       for flip in [False, True]:
         if rotation:
-          symmetricBoard = np.rot90(board, rotation)
-          symmetricPi = np.rot90(shapedPi, rotation)
+          symmetricBoard = np.rot90(board, rotation, axes=(1, 2))
+          symmetricShapedPi = np.rot90(shapedPi, rotation)
+          symmetricShapedPi = np.roll(symmetricShapedPi, -rotation, axis=2)
         else:
           symmetricBoard = board
-          symmetricPi = shapedPi
+          symmetricShapedPi = shapedPi
         if flip:
-          symmetricBoard = np.fliplr(symmetricBoard)
-          symmetricPi = np.fliplr(symmetricPi)
-        symmetries += [(symmetricBoard, list(symmetricPi.ravel()))]
+          symmetricBoard = np.flip(symmetricBoard, axis=2)
+          symmetricShapedPi = np.fliplr(symmetricShapedPi)
+        symmetricPi = symmetricShapedPi.flatten()
+        if flip:
+          for i in range(0, self.actionSize, MOVEMENT_COUNT):
+            symmetricPi[i], symmetricPi[i + 2] = symmetricPi[i + 2], symmetricPi[i]
+        symmetries += [(symmetricBoard, symmetricPi)]
     return symmetries
 
   def stringRepresentation(self, board):
