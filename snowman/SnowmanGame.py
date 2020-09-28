@@ -1,20 +1,27 @@
 from Game import Game
 import numpy as np
 
+BOARD_LENGTH_MIN = 3
+BOARD_LENGTH_DEF = 6
+LAYER_COUNT_MIN = 2
+LAYER_COUNT_MAX = 4
+LAYER_COUNT_DEF = 3
 SNOW_PLANE = -1
-LAYER_COUNT = 3
-PLANE_COUNT = 2 * LAYER_COUNT + 1
 MOVEMENTS = [(1, 0), (0, 1), (-1, 0), (0, -1)]
 MOVEMENT_COUNT = len(MOVEMENTS)
-PLAYER_LAYER_SYMBOLS = ['o', 'C', 'O']
-OPPONENT_LAYER_SYMBOLS = ['x', 'Y', 'X']
-PLAYER_SNOWMAN_SYMBOLS = ['8', 'S']
-OPPONENT_SNOWMAN_SYMBOLS = ['Z', '7']
+PLAYER_LAYER_SYMBOLS = ['o', 'C', 'O', 'D']
+OPPONENT_LAYER_SYMBOLS = ['x', 'Y', 'X', 'K']
+PLAYER_SNOWMAN_SYMBOLS = ['8', 'S', '3']
+OPPONENT_SNOWMAN_SYMBOLS = ['Z', '7', '/']
 
 class SnowmanGame(Game):
-  def __init__(self, boardLength):
+  def __init__(self, boardLength=BOARD_LENGTH_DEF, layerCount=LAYER_COUNT_DEF):
+    assert boardLength >= BOARD_LENGTH_MIN
+    assert layerCount >= LAYER_COUNT_MIN and layerCount <= LAYER_COUNT_MAX
     self.boardLength = boardLength
-    self.boardShape = (PLANE_COUNT, self.boardLength, self.boardLength)
+    self.layerCount = layerCount
+    planeCount = 2 * layerCount + 1
+    self.boardShape = (planeCount, boardLength, boardLength)
     self.actionSize = boardLength * boardLength * MOVEMENT_COUNT
     self.actionShape = (boardLength, boardLength, MOVEMENT_COUNT)
 
@@ -38,7 +45,7 @@ class SnowmanGame(Game):
     valids = None
     if not moveDetection:
       valids = np.zeros(self.actionSize, dtype=int)
-    firstLayerPlane = (0 if player == 1 else LAYER_COUNT)
+    firstLayerPlane = (0 if player == 1 else self.layerCount)
     for y in range(self.boardLength):
       for x in range(self.boardLength):
         for i in range(MOVEMENT_COUNT):
@@ -54,7 +61,7 @@ class SnowmanGame(Game):
               continue
           else:
             sourceLayerIndex = None
-            for j in range(LAYER_COUNT - 1):
+            for j in range(self.layerCount - 1):
               if board[firstLayerPlane + j][y][x] != 0:
                 if sourceLayerIndex is not None:
                   sourceLayerIndex = None
@@ -66,7 +73,7 @@ class SnowmanGame(Game):
               if board[firstLayerPlane + sourceLayerIndex][targetY][targetX] != 0:
                 continue
               targetWithSnowballs = True
-              for j in range(LAYER_COUNT - 1, sourceLayerIndex, -1):
+              for j in range(self.layerCount - 1, sourceLayerIndex, -1):
                 if board[firstLayerPlane + j][targetY][targetX] == 0:
                   targetWithSnowballs = False
                   break
@@ -91,9 +98,9 @@ class SnowmanGame(Game):
   def getCanonicalForm(self, board, player):
     canonicalBoard = np.copy(board)
     if player != 1:
-      for i in range(LAYER_COUNT):
-        canonicalBoard[i] = board[LAYER_COUNT + i]
-        canonicalBoard[LAYER_COUNT + i] = board[i]
+      for i in range(self.layerCount):
+        canonicalBoard[i] = board[self.layerCount + i]
+        canonicalBoard[self.layerCount + i] = board[i]
     return canonicalBoard
 
   def getSymmetries(self, board, pi):
@@ -133,7 +140,7 @@ class SnowmanGame(Game):
     targetY = y + dy
     assert targetX >= 0 and targetX < self.boardLength
     assert targetY >= 0 and targetY < self.boardLength
-    firstLayerPlane = (0 if player == 1 else LAYER_COUNT)
+    firstLayerPlane = (0 if player == 1 else self.layerCount)
     if board[SNOW_PLANE][y][x] != 0:
       assert board[SNOW_PLANE][targetY][targetX] != 0
       board[SNOW_PLANE][y][x] = 0
@@ -141,7 +148,7 @@ class SnowmanGame(Game):
       board[firstLayerPlane][targetY][targetX] = 1
     else:
       sourceLayerIndex = None
-      for i in range(LAYER_COUNT - 1):
+      for i in range(self.layerCount - 1):
         if board[firstLayerPlane + i][y][x] != 0:
           assert sourceLayerIndex is None
           sourceLayerIndex = i
@@ -153,39 +160,38 @@ class SnowmanGame(Game):
         assert board[sourceLayerPlane + 1][targetY][targetX] == 0
         board[sourceLayerPlane + 1][targetY][targetX] = 1
       else:
-        for i in range(LAYER_COUNT - 1, sourceLayerIndex, -1):
+        for i in range(self.layerCount - 1, sourceLayerIndex, -1):
           assert board[firstLayerPlane + i][targetY][targetX] != 0
         assert board[sourceLayerPlane][targetY][targetX] == 0
         board[sourceLayerPlane][targetY][targetX] = 1
 
   def isPlayerWin(self, board, player):
-    firstLayerPlane = (0 if player == 1 else LAYER_COUNT)
+    firstLayerPlane = (0 if player == 1 else self.layerCount)
     for y in range(self.boardLength):
       for x in range(self.boardLength):
-        for i in range(LAYER_COUNT - 1, -1, -1):
+        for i in range(self.layerCount - 1, -1, -1):
           if board[firstLayerPlane + i][y][x] == 0:
             break
           elif i == 0:
             return True
     return False
 
-  # Board example of size 8x8
-  # '*' - snow, 'o'/'C'/'O' - snowballs, x'/'Y'/'X' - opponent snowballs
-  # 'S'/'8' - snowmen, '7'/'Z' - opponent snowmen
-  #     1 2 3 4 5 6 7 8
-  #     - - - - - - - -
-  # 1 | * * * * * * * * |
-  # 2 | * * * *   x * * |
-  # 3 |   o * * X Y *   |
-  # 4 | *     *     *   |
-  # 5 | * C * *       Z |
-  # 6 | * * * *   *     |
-  # 7 | *       S *     |
-  # 8 | * * * *         |
-  #     - - - - - - - -
+  # Board example of size 6x6 with 2 layers
+  # '*' - snow, 'o'/'O' - snowballs, x'/'X' - opponent snowballs
+  # '8' - snowman, 'Z' - opponent snowman
+  #     1 2 3 4 5 6
+  #     - - - - - -
+  # 1 | * * * X * * |
+  # 2 | 8         O |
+  # 3 |   * *       |
+  # 4 |   *   x X   |
+  # 5 | * * *   x * |
+  # 6 | * o   * * * |
+  #     - - - - - -
   @staticmethod
   def display(board):
     boardLength = board.shape[-1]
+    layerCount = int((board.shape[0] - 1) / 2)
     print("")
     print("  ", end=" ")
     for _ in range(boardLength):
@@ -198,14 +204,14 @@ class SnowmanGame(Game):
         if board[SNOW_PLANE][y][x] != 0:
           symbol = "*"
         else:
-          for i in range(LAYER_COUNT - 1, -1, -1):
+          for i in range(layerCount - 1, -1, -1):
             if board[i][y][x] != 0:
               if symbol is None:
                 symbol = PLAYER_LAYER_SYMBOLS[i]
               else:
                 symbol = PLAYER_SNOWMAN_SYMBOLS[i]
-          for i in range(LAYER_COUNT - 1, -1, -1):
-            if board[LAYER_COUNT + i][y][x] != 0:
+          for i in range(layerCount - 1, -1, -1):
+            if board[layerCount + i][y][x] != 0:
               if symbol is None:
                 symbol = OPPONENT_LAYER_SYMBOLS[i]
               else:
