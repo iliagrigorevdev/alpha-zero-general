@@ -87,12 +87,12 @@ class SnowmanGame(Game):
     return valids
 
   def getGameEnded(self, board, player):
-    if self.getValidMoves(board, player, True):
-      return 0 # not over
-    if self.isPlayerWin(board, player):
-      return 1 # win
     if self.isPlayerWin(board, -player):
       return -1 # lose
+    if self.isPlayerWin(board, player):
+      return 1 # win
+    if self.getValidMoves(board, player, True):
+      return 0 # not over
     return 1e-4 # draw
 
   def getCanonicalForm(self, board, player):
