@@ -11,6 +11,10 @@ log = logging.getLogger(__name__)
 
 coloredlogs.install(level='INFO')  # Change this to DEBUG to see more info.
 
+BOARD_LENGTH = 4
+LAYER_COUNT = 2
+MODEL_FOLDER = './model_s' + str(BOARD_LENGTH) + '_l' + str(LAYER_COUNT) + '/'
+
 args = dotdict({
   'numIters': 1000,
   'numEps': 100,              # Number of complete self-play games to simulate during a new iteration.
@@ -21,9 +25,9 @@ args = dotdict({
   'arenaCompare': 40,         # Number of games to play during arena play to determine if new net will be accepted.
   'cpuct': 1,
 
-  'checkpoint': './temp/',
+  'checkpoint': MODEL_FOLDER,
   'load_model': False,
-  'load_folder_file': ('./temp/','best.pth.tar'),
+  'load_folder_file': (MODEL_FOLDER, 'best.pth.tar'),
   'numItersForTrainExamplesHistory': 20,
 
 })
@@ -31,7 +35,7 @@ args = dotdict({
 
 def main():
   log.info('Loading %s...', Game.__name__)
-  game = Game(6)
+  game = Game(BOARD_LENGTH, LAYER_COUNT)
 
   log.info('Loading %s...', NNet.__name__)
   nnet = NNet(game)
