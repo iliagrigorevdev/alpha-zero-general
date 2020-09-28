@@ -63,6 +63,8 @@ class SnowmanGame(Game):
             if sourceLayerIndex is None:
               continue
             if not targetWithSnow:
+              if board[firstLayerPlane + sourceLayerIndex][targetY][targetX] != 0:
+                continue
               targetWithSnowballs = True
               for j in range(LAYER_COUNT - 1, sourceLayerIndex, -1):
                 if board[firstLayerPlane + j][targetY][targetX] == 0:
@@ -153,6 +155,7 @@ class SnowmanGame(Game):
       else:
         for i in range(LAYER_COUNT - 1, sourceLayerIndex, -1):
           assert board[firstLayerPlane + i][targetY][targetX] != 0
+        assert board[sourceLayerPlane][targetY][targetX] == 0
         board[sourceLayerPlane][targetY][targetX] = 1
 
   def isPlayerWin(self, board, player):
