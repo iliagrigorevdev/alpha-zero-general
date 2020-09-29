@@ -63,7 +63,7 @@ class Arena():
             if result != 0:
                 if verbose:
                     print("Game over: Result ", str(curPlayer * result))
-                return result
+                return curPlayer * result
             curPlayer = nextPlayer
 
     def playGames(self, num, verbose=False):
