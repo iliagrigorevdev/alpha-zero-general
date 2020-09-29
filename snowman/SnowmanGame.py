@@ -181,24 +181,29 @@ class SnowmanGame(Game):
   # '8' - snowman, 'Z' - opponent snowman
   #     1 2 3 4 5 6
   #     - - - - - -
-  # 1 | * * * X * * |
-  # 2 | 8         O |
-  # 3 |   * *       |
-  # 4 |   *   x X   |
-  # 5 | * * *   x * |
-  # 6 | * o   * * * |
+  # A | * * * X * * |
+  # B | 8         O |
+  # C |   * *       |
+  # D |   *   x X   |
+  # E | * * *   x * |
+  # F | * o   * * * |
   #     - - - - - -
   @staticmethod
   def display(board):
     boardLength = board.shape[-1]
     layerCount = int((board.shape[0] - 1) / 2)
     print("")
-    print("  ", end=" ")
+    print("   ", end=" ")
+    for x in range(boardLength):
+      print(x + 1, end=" ")
+    print("")
+    print("   ", end=" ")
     for _ in range(boardLength):
       print("-", end=" ")
-    print(" ")
+    print("")
     for y in range(boardLength):
-      print(" |",end=" ")
+      l = chr(ord("A") + y)
+      print(l, "|",end=" ")
       for x in range(boardLength):
         symbol = None
         if board[SNOW_PLANE][y][x] != 0:
@@ -220,8 +225,8 @@ class SnowmanGame(Game):
           symbol = " "
         print(symbol, end=" ")
       print("|")
-    print("  ", end=" ")
+    print("   ", end=" ")
     for _ in range(boardLength):
       print("-", end=" ")
-    print(" ")
+    print("")
     print("")

@@ -41,6 +41,11 @@ class Arena():
         curPlayer = 1
         board = self.game.getInitBoard()
         it = 0
+
+        if verbose:
+            assert self.display
+            self.display(board)
+
         while True:
             it += 1
             canonicalBoard = self.game.getCanonicalForm(board, curPlayer)

@@ -11,7 +11,7 @@ log = logging.getLogger(__name__)
 
 coloredlogs.install(level='INFO')  # Change this to DEBUG to see more info.
 
-BOARD_LENGTH = 4
+BOARD_LENGTH = 5
 LAYER_COUNT = 2
 MODEL_FOLDER = './model_s' + str(BOARD_LENGTH) + '_l' + str(LAYER_COUNT) + '/'
 
