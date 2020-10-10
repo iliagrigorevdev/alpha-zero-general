@@ -34,9 +34,9 @@ class HumanPlayer():
       inputMove = input()
       if len(inputMove) == 3:
         try:
-          y = ord(inputMove[0]) - ord("A")
+          y = ord(inputMove[0].upper()) - ord("A")
           x = int(inputMove[1]) - 1
-          d = HumanPlayer.DIRECTIONS[inputMove[2]]
+          d = HumanPlayer.DIRECTIONS[inputMove[2].upper()]
           action = (y * self.game.boardLength + x) * 4 + d
           if valids[action]:
             break
